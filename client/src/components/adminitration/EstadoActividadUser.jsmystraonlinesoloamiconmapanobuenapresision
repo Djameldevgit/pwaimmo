@@ -1,0 +1,231 @@
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix para íconos de Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+const EstadoActividadUser = () => {
+  const { socket, auth, homeUsers } = useSelector((state) => state);
+  const [userLocation, setUserLocation] = useState(null);
+  const [otherUsers, setOtherUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // Obtener la ubicación del usuario actual
+  const startTracking = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(
+        (position) => {
+          const location = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          };
+          setUserLocation(location);
+          
+          if (!userLocation) {
+            socket.emit("register_user", {
+              userId: auth.user._id,
+              location,
+              username: auth.user.username // Cambiado de name a username
+            });
+          }
+          
+          socket.emit("update_location", {
+            userId: auth.user._id,
+            location
+          });
+        },
+        (error) => console.error("Error de GPS:", error),
+        { enableHighAccuracy: true, maximumAge: 5000 }
+      );
+    }
+  };
+
+  // Escuchar actualizaciones de otros usuarios
+  useEffect(() => {
+    socket.on("active_users", (users) => {
+      console.log("Usuarios activos recibidos:", users); // Debug
+      setOtherUsers(users.filter(user => user.userId !== auth.user._id));
+    });
+
+    socket.on("location_updated", ({ userId, location }) => {
+      console.log("Ubicación actualizada para:", userId); // Debug
+      setOtherUsers(prev => 
+        prev.map(user => 
+          user.userId === userId ? { ...user, location } : user
+        )
+      );
+    });
+
+    socket.on("user_disconnected", (userId) => {
+      console.log("Usuario desconectado:", userId); // Debug
+      setOtherUsers(prev => prev.filter(user => user.userId !== userId));
+    });
+
+    return () => {
+      socket.off("active_users");
+      socket.off("location_updated");
+      socket.off("user_disconnected");
+    };
+  }, [auth.user._id, socket]);
+
+  // Combinar usuarios de homeUsers con datos en tiempo real
+  const getEnhancedUsers = () => {
+    const enhancedUsers = homeUsers.users.map(user => {
+      const onlineUser = otherUsers.find(u => u.userId === user._id);
+      const isCurrentUser = user._id === auth.user._id;
+      
+      return {
+        ...user,
+        online: isCurrentUser ? true : !!onlineUser, // El usuario actual siempre está online
+        location: onlineUser?.location,
+        lastSeen: onlineUser?.lastSeen
+      };
+    });
+
+    console.log("Usuarios mejorados:", enhancedUsers); // Debug
+    return enhancedUsers;
+  };
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>📍 Seguimiento en Tiempo Real</h2>
+      
+      <button 
+        onClick={startTracking}
+        style={{ 
+          padding: "10px 15px", 
+          marginBottom: "20px",
+          backgroundColor: "#4CAF50",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer"
+        }}
+      >
+        Activar Mi Seguimiento
+      </button>
+
+      {/* Tabla de usuarios mejorada */}
+      <div style={{ marginBottom: "20px", overflowX: "auto" }}>
+        <table style={{ 
+          width: "100%", 
+          borderCollapse: "collapse",
+          border: "1px solid #ddd"
+        }}>
+          <thead>
+            <tr style={{ backgroundColor: "#f2f2f2" }}>
+              <th style={{ padding: "12px", textAlign: "left" }}>Usuario</th>
+              <th style={{ padding: "12px", textAlign: "left" }}>Estado</th>
+              <th style={{ padding: "12px", textAlign: "left" }}>Última actividad</th>
+              <th style={{ padding: "12px", textAlign: "left" }}>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {getEnhancedUsers().map((user) => {
+              const isCurrentUser = user._id === auth.user._id;
+              return (
+                <tr 
+                  key={user._id} 
+                  style={{ 
+                    borderBottom: "1px solid #ddd",
+                    backgroundColor: isCurrentUser ? "#f0f8ff" : "white"
+                  }}
+                >
+                  <td style={{ padding: "12px" }}>
+                    {user.username}
+                    {isCurrentUser && " (Tú)"}
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    <span style={{
+                      display: "inline-block",
+                      width: "12px",
+                      height: "12px",
+                      borderRadius: "50%",
+                      backgroundColor: user.online ? "#28a745" : "#dc3545",
+                      marginRight: "8px"
+                    }}></span>
+                    {user.online ? "En línea" : "Offline"}
+                    {user.online && !isCurrentUser && " (Activo)"}
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    {user.lastSeen ? 
+                      new Date(user.lastSeen).toLocaleTimeString() : 
+                      "No disponible"}
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    <button
+                      onClick={() => setSelectedUser(user)}
+                      style={{
+                        padding: "8px 12px",
+                        backgroundColor: user.location ? "#17a2b8" : "#6c757d",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: user.location ? "pointer" : "not-allowed"
+                      }}
+                      disabled={!user.location}
+                    >
+                      {user.location ? "Ver ubicación" : "Sin ubicación"}
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mapa principal */}
+      <div style={{ height: "500px", width: "100%" }}>
+        {userLocation ? (
+          <MapContainer 
+            center={selectedUser?.location ? 
+              [selectedUser.location.lat, selectedUser.location.lng] : 
+              [userLocation.lat, userLocation.lng]} 
+            zoom={selectedUser ? 16 : 15} 
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            />
+            
+            {/* Marcador del usuario actual */}
+            <Marker position={[userLocation.lat, userLocation.lng]}>
+              <Popup>Tú ({auth.user.username})</Popup>
+            </Marker>
+            
+            {/* Marcador del usuario seleccionado */}
+            {selectedUser?.location && (
+              <Marker position={[selectedUser.location.lat, selectedUser.location.lng]}>
+                <Popup>{selectedUser.username}</Popup>
+              </Marker>
+            )}
+            
+            {/* Otros usuarios (solo si no hay usuario seleccionado) */}
+            {!selectedUser && otherUsers.map((user) => (
+              <Marker 
+                key={user.userId} 
+                position={[user.location.lat, user.location.lng]}
+              >
+                <Popup>{user.username}</Popup>
+              </Marker>
+            ))}
+          </MapContainer>
+        ) : (
+          <p>Esperando ubicación...</p>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default EstadoActividadUser;

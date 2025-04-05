@@ -1,0 +1,178 @@
+import React, { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix para los íconos de Leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+const Map = ({ post }) => {
+  const [mapCenter, setMapCenter] = useState([36.5, 3.5]); // Coordenadas iniciales de Argelia
+  const [markerPosition, setMarkerPosition] = useState([36.5, 3.5]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Hook para actualizar la vista del mapa
+  function ChangeView({ center }) {
+    const map = useMap();
+    useEffect(() => {
+      map.setView(center, 14); // Zoom más cercano para mejor detalle
+    }, [center, map]);
+    return null;
+  }
+
+  useEffect(() => {
+    if (post?.wilaya) {
+      getBestAvailableLocation();
+    }
+  }, [post?.quartier, post?.commune, post?.wilaya]);
+
+  // Función que determina la mejor ubicación disponible
+  const getBestAvailableLocation = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Orden de prioridad: quartier > commune > wilaya
+      let query;
+      if (post?.quartier && post.quartier.trim() !== "") {
+        query = `${post.quartier}, ${post.commune}, ${post.wilaya}, Algeria`;
+        console.log("Buscando por quartier:", query);
+      } else if (post?.commune && post.commune.trim() !== "") {
+        query = `${post.commune}, ${post.wilaya}, Algeria`;
+        console.log("Buscando por commune:", query);
+      } else {
+        query = `${post.wilaya}, Algeria`;
+        console.log("Buscando por wilaya:", query);
+      }
+
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+        query
+      )}&format=json&addressdetails=1&limit=1`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'YourAppName/1.0 (your@email.com)'
+        }
+      });
+      
+      const data = await response.json();
+
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        setMapCenter([lat, lon]);
+        setMarkerPosition([lat, lon]);
+        console.log("Ubicación encontrada:", lat, lon);
+      } else {
+        // Si no encuentra con la prioridad actual, intenta con el siguiente nivel
+        if (post?.quartier && post.quartier.trim() !== "") {
+          console.log("No se encontró quartier, intentando con commune...");
+          await getBestAvailableLocationFallback('commune');
+        } else if (post?.commune && post.commune.trim() !== "") {
+          console.log("No se encontró commune, intentando con wilaya...");
+          await getBestAvailableLocationFallback('wilaya');
+        } else {
+          setError("Ubicación no encontrada. Mostrando mapa de Argelia.");
+        }
+      }
+    } catch (error) {
+      console.error("Error al obtener ubicación:", error);
+      setError("No se pudo cargar la ubicación. Intente recargar la página.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función de respaldo cuando no se encuentra la ubicación prioritaria
+  const getBestAvailableLocationFallback = async (level) => {
+    try {
+      let query;
+      if (level === 'commune' && post?.commune) {
+        query = `${post.commune}, ${post.wilaya}, Algeria`;
+      } else {
+        query = `${post.wilaya}, Algeria`;
+      }
+
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+        query
+      )}&format=json&addressdetails=1&limit=1`;
+      
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'YourAppName/1.0 (your@email.com)'
+        }
+      });
+      
+      const data = await response.json();
+
+      if (data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        setMapCenter([lat, lon]);
+        setMarkerPosition([lat, lon]);
+        console.log(`Ubicación encontrada por ${level}:`, lat, lon);
+      } else {
+        setError("Ubicación no encontrada. Mostrando mapa de Argelia.");
+      }
+    } catch (error) {
+      console.error(`Error al obtener ubicación por ${level}:`, error);
+      setError("Error al cargar la ubicación. Mostrando mapa de Argelia.");
+    }
+  };
+
+  return (
+    <div className="map-container" style={{ marginTop: "20px" }}>
+      <h4 style={{ marginBottom: "15px", color: "#333" }}>📍 Ubicación Exacta de la Propiedad</h4>
+      
+      <div style={{ marginBottom: "15px", padding: "10px", backgroundColor: "#f8f9fa", borderRadius: "5px" }}>
+        {post?.quartier && (
+          <p style={{ margin: "5px 0" }}>
+            <strong>Barrio (Quartier):</strong> {post.quartier}
+          </p>
+        )}
+        <p style={{ margin: "5px 0" }}>
+          <strong>Comuna:</strong> {post?.commune || "No especificado"}
+        </p>
+        <p style={{ margin: "5px 0" }}>
+          <strong>Wilaya:</strong> {post?.wilaya || "No especificado"}
+        </p>
+      </div>
+
+      {loading && <p style={{ textAlign: "center" }}>Buscando la ubicación exacta...</p>}
+      {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
+
+      <div style={{ height: "500px", width: "100%", borderRadius: "8px", overflow: "hidden", border: "1px solid #ddd" }}>
+        <MapContainer 
+          center={mapCenter} 
+          zoom={14} 
+          style={{ height: "100%", width: "100%" }}
+          scrollWheelZoom={false}
+        >
+          <ChangeView center={mapCenter} />
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          />
+          <Marker position={markerPosition}>
+            <Popup>
+              <div style={{ minWidth: "200px" }}>
+                <strong>Ubicación de la propiedad:</strong><br />
+                {post?.quartier && <span>Barrio: {post.quartier}<br /></span>}
+                {post?.commune && <span>Comuna: {post.commune}<br /></span>}
+                {post?.wilaya && <span>Wilaya: {post.wilaya}</span>}
+              </div>
+            </Popup>
+          </Marker>
+        </MapContainer>
+      </div>
+    </div>
+  );
+};
+
+export default Map;

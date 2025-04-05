@@ -1,0 +1,228 @@
+/* Variables globales */
+:root {
+    --primary-color: #4a90e2;
+    --bg-light: #f9f9f9;
+    --bg-white: #ffffff;
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-hover: rgba(0, 0, 0, 0.1);
+    --border-radius: 12px;
+    --font-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --font-size-lg: 1.7rem;
+    --font-size-md: 1.375rem;
+    --font-size-sm: 1rem;
+}
+
+/* Contenedor principal */
+.description-container {
+    font-family: var(--font-primary);
+    background-color: var(--bg-light);
+    border-radius: var(--border-radius);
+    padding: 0.2rem;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    width: calc(100% - 1rem); /* Ajuste para móviles */
+    max-width: 1200px;
+    min-width: 0; /* Importante para flex/grid en móviles */
+    margin: 0.2rem auto;
+    box-sizing: border-box; /* Incluye padding en el ancho */
+}
+
+/* Soporte para textos RTL */
+.description-container.rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Lista de información */
+.post-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.4rem;
+    width: 100%;
+}
+
+/* Ítems de información */
+.info-item {
+    padding: 0.7rem;
+    background-color: var(--bg-white);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px var(--shadow-light);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    will-change: transform;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0; /* Permite que el contenido se ajuste */
+}
+
+.info-item .fas {
+    font-size: 18px;
+    flex-shrink: 0; /* Evita que el ícono se reduzca */
+}
+
+.info-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 4px var(--shadow-hover);
+}
+
+/* Contenedor de texto dentro del ítem */
+.info-text-container {
+    min-width: 0; /* Permite el ajuste del texto */
+    overflow: hidden; /* Evita desbordamiento */
+}
+
+/* Íconos */
+.info-item i {
+    font-size: var(--font-size-md); /* Tamaño más adecuado para móviles */
+    color: var(--primary-color);
+    margin-right: 12px;
+}
+
+/* Textos */
+.info-label {
+    font-weight: 600;
+    color: rgb(2, 1, 1);
+    margin-right: 8px;
+    display: inline-block;
+    white-space: nowrap; /* Evita salto de línea en la etiqueta */
+}
+
+.info-value {
+    font-weight: 400;
+    color: rgb(0, 0, 0);
+    word-break: break-word; /* Asegura que el texto largo se rompa correctamente */
+    overflow-wrap: anywhere; /* Mejor manejo de palabras largas */
+}
+
+/* Sección de descripción */
+.descriptiones-container {
+    max-width: 100%;
+    margin: 10px 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem;
+    box-sizing: border-box;
+}
+
+.infoitem-description {
+    background: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.infoitem-description i {
+    color: rgb(1, 99, 245);
+    font-size: 18px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.infolabel {
+    font-weight: bold;
+    color: rgb(3, 0, 51);
+    margin-right: 8px;
+    white-space: nowrap;
+}
+
+.infovalue {
+    font-size: 16px;
+    color: rgb(0, 0, 0);
+    word-break: break-word;
+}
+
+.cardbodycontent {
+    display: inline-block;
+    font-size: 16px;
+    line-height: 1.5;
+    color: rgb(15, 15, 15);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.readMore {
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    padding-left: 5px;
+    display: inline-block;
+}
+
+.readMore.color-red {
+    color: #d9534f;
+}
+
+/* Media Queries mejoradas */
+@media (max-width: 1024px) {
+    .post-info {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    
+    .info-item {
+        padding: 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .description-container {
+        padding: 0.1rem;
+        margin: 0.2rem;
+        width: calc(100% - 1rem);
+    }
+    
+    .post-info {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
+    .info-item {
+        flex-direction: row;
+        align-items: center;
+        padding: 0.4rem;
+    }
+    
+    .info-item i {
+        font-size: 1.5rem;
+        margin-right: 8px;
+    }
+    
+    .info-label, 
+    .info-value {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .description-container {
+        border-radius: 8px;
+    }
+    
+    .info-item {
+        padding: 1rem;
+        flex-wrap: wrap; /* Permite ajuste en pantallas muy pequeñas */
+    }
+    
+    .info-item i {
+        font-size: 1.7rem;
+        margin-right: 6px;
+    }
+    
+    .info-label, 
+    .info-value {
+        font-size: 1.3rem;
+    }
+    
+    .info-label {
+        white-space: normal; /* Permite salto de línea si es necesario */
+    }
+    
+    .cardbodycontent,
+    .infovalue {
+        font-size: 1.3rem;
+    }
+    
+    .readMore {
+        font-size: 0.9rem;
+    }
+}

@@ -1,0 +1,1 @@
+export const BASE_URL = 'https://Immobilier-djamel-devat.herokuapp.com'

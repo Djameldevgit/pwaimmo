@@ -1,0 +1,70 @@
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const Home = () => {
+  const [location, setLocation] = useState('');
+  const [mapCenter, setMapCenter] = useState([36.5, 3.5]); // Coordenadas iniciales
+  const [markerPosition, setMarkerPosition] = useState([36.5, 3.5]); // Coordenadas del marcador
+
+  // Crear un nuevo icono personalizado rojo
+  const customIcon = new L.Icon({
+    iconUrl: 'https://img.icons8.com/ios-filled/50/FF0000/marker.png', // URL del icono rojo
+    iconSize: [32, 32], // Tamaño del icono
+    iconAnchor: [16, 32], // Anclaje del icono (donde se coloca el punto de referencia)
+    popupAnchor: [0, -32] // Anclaje del popup (ajustar donde aparece)
+  });
+
+  // Función para obtener las coordenadas de una dirección utilizando Nominatim
+  const getCoordinates = async (address) => {
+    const url = `https://nominatim.openstreetmap.org/search?q=${address}&format=json&addressdetails=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.length > 0) {
+      const lat = data[0].lat;
+      const lon = data[0].lon;
+      setMapCenter([lat, lon]); // Actualiza el centro del mapa
+      setMarkerPosition([lat, lon]); // Actualiza la posición del marcador
+    } else {
+      alert('No se encontró la ubicación');
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (location.trim()) {
+      getCoordinates(location); // Llamar a la función para obtener las coordenadas
+    }
+  };
+
+  return (
+    <div className="map-container">
+      {/* Formulario de entrada */}
+      <form onSubmit={handleSubmit} className="location-form">
+        <input
+          type="text"
+          placeholder="Escribe una provincia o país"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="location-input"
+        />
+        <button type="submit" className="location-button">
+          <i className="fa fa-search"></i> {/* Icono de búsqueda */}
+        </button>
+      </form>
+
+      {/* Mapa */}
+      <MapContainer center={mapCenter} zoom={6} className="map" style={{ height: '500px' }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <Marker position={markerPosition} icon={customIcon}>
+          <Popup>
+            Ubicación seleccionada: {location}
+          </Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+};
+
+export default Home;

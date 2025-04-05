@@ -1,0 +1,134 @@
+.notify-modal {
+    min-width: 300px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 16px;
+}
+
+.notify-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.sound-icon {
+    font-size: 1.2rem;
+    color: #ff4d4f;
+    cursor: pointer;
+}
+
+.divider {
+    margin: 8px 0;
+    border: 0;
+    border-top: 1px solid #e8e8e8;
+}
+
+.no-notice-img {
+    width: 100%;
+    opacity: 0.6;
+}
+
+.notify-list {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.notify-item {
+    margin-bottom: 12px;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.notify-item:hover {
+    background-color: #f5f5f5;
+}
+
+.notify-link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+}
+
+.notify-content {
+    margin-left: 8px;
+    flex: 1;
+}
+
+.username {
+    margin-right: 4px;
+}
+
+.notify-image {
+    width: 30px;
+    margin-left: 8px;
+}
+
+.notify-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.timestamp {
+    color: #8c8c8c;
+}
+
+.unread-icon {
+    color: #1890ff;
+    font-size: 0.8rem;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-icon {
+    cursor: pointer;
+    color: #8c8c8c;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    z-index: 1;
+}
+
+.dropdown-content button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #ff4d4f;
+}
+
+.dropdown-content button:hover {
+    background-color: #f5f5f5;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.delete-all {
+    text-align: right;
+    color: #ff4d4f;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.delete-all:hover {
+    text-decoration: underline;
+}

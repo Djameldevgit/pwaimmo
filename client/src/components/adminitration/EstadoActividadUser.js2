@@ -1,0 +1,52 @@
+// EstadoActividadUser.js
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateUserActivity } from '../../../../socketActions';
+ 
+const EstadoActividadUser = () => {
+  const dispatch = useDispatch();
+  const { socket, userActivity } = useSelector(state => state.socket); // Obtenemos el socket y la actividad de los usuarios de Redux
+
+  useEffect(() => {
+    if (socket) {
+      // Escuchar la actualización de la actividad de los usuarios
+      socket.on('activityUpdated', (updatedActivity) => {
+        dispatch(updateUserActivity(updatedActivity)); // Actualiza la actividad en Redux
+      });
+    }
+
+    return () => {
+      if (socket) {
+        socket.off('activityUpdated'); // Limpiar el evento cuando el componente se desmonte
+      }
+    };
+  }, [socket, dispatch]);
+
+  return (
+    <div className="estado-actividad-user">
+      <h2>Usuarios Activos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Página</th>
+            <th>Última Actividad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {userActivity.map((user) => (
+            <tr key={user.id} className={user.active ? 'active' : 'inactive'}>
+              <td>{user.name}</td>
+              <td>{user.active ? 'Activo' : 'Desconectado'}</td>
+              <td>{user.page}</td>
+              <td>{user.lastActivity}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default EstadoActividadUser;

@@ -1,0 +1,117 @@
+/* estadoActividadUser.css */
+
+.estado-actividad-user {
+    margin: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  h2 {
+    text-align: center;
+    color: #333;
+    font-size: 24px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  table th, table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  table th {
+    background-color: #007bff;
+    color: white;
+  }
+  
+  table tbody tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  table tbody .active {
+    background-color: #d4edda; /* Verde suave */
+  }
+  
+  table tbody .inactive {
+    background-color: #f8d7da; /* Rojo suave */
+  }
+  
+  table td {
+    font-size: 14px;
+    color: #333;
+  }
+  
+  table td:nth-child(1) {
+    font-weight: bold;
+  }
+  
+  table td:nth-child(2) {
+    color: #28a745; /* Verde para los activos */
+  }
+  
+  table td:nth-child(3), table td:nth-child(4) {
+    color: #6c757d;
+  }
+  
+  table td:nth-child(5) {
+    color: #17a2b8;
+  }
+  
+  table td:nth-child(6), table td:nth-child(7) {
+    font-weight: bold;
+    color: #6c757d;
+  }
+  
+  table td:nth-child(8) {
+    color: #17a2b8;
+  }
+  
+  /* Media Queries para pantallas pequeñas */
+  @media screen and (max-width: 768px) {
+    .estado-actividad-user {
+      margin: 10px;
+      padding: 10px;
+    }
+  
+    table {
+      font-size: 12px;
+    }
+  
+    table th, table td {
+      padding: 10px;
+    }
+  
+    table th {
+      font-size: 14px;
+    }
+  
+    h2 {
+      font-size: 20px;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .estado-actividad-user {
+      padding: 5px;
+    }
+  
+    table {
+      font-size: 10px;
+    }
+  
+    table th, table td {
+      padding: 8px;
+    }
+  
+    h2 {
+      font-size: 18px;
+    }
+  }
+  

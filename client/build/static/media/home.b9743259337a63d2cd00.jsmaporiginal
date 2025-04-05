@@ -1,0 +1,60 @@
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const Home = () => {
+  const [location, setLocation] = useState('');
+  const [mapCenter, setMapCenter] = useState([40.748817, -73.985428]); // Coordenadas iniciales (Nueva York)
+  const [markerPosition, setMarkerPosition] = useState([40.748817, -73.985428]); // Posición inicial del marcador
+
+  // Función para obtener coordenadas de una dirección usando Nominatim
+  const getCoordinates = async (address) => {
+    const url = `https://nominatim.openstreetmap.org/search?q=${address}&format=json&addressdetails=1`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.length > 0) {
+      const lat = data[0].lat;
+      const lon = data[0].lon;
+      setMapCenter([lat, lon]); // Cambiar el centro del mapa
+      setMarkerPosition([lat, lon]); // Cambiar la posición del marcador
+    } else {
+      alert('No se encontró la ubicación');
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (location.trim()) {
+      getCoordinates(location); // Llamar a la función para obtener coordenadas
+    }
+  };
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {/* Formulario de entrada */}
+      <form onSubmit={handleSubmit} style={{ position: 'absolute', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 1000 }}>
+        <input
+          type="text"
+          placeholder="Escribe una provincia o país"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          style={{ padding: '10px', fontSize: '16px', width: '300px' }}
+        />
+        <button type="submit" style={{ padding: '10px', marginLeft: '10px' }}>Buscar</button>
+      </form>
+
+      {/* Mapa */}
+      <MapContainer center={mapCenter} zoom={13} style={{ height: "500px", width: "100%" }}>
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <Marker position={markerPosition}>
+          <Popup>
+            Ubicación seleccionada: {location}
+          </Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+};
+
+export default Home;

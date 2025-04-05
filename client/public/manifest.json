@@ -1,0 +1,37 @@
+{
+  "short_name": "Immobilier App",
+  "name": "Vente Location Immobilier",
+  "icons": [
+   
+   
+    {
+      "src": "/logo192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+
+
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    },
+    {
+      "src": "badge.png",
+      "type": "image/png",
+      "sizes": "72x72",
+      "purpose": "badge"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
