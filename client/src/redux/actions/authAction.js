@@ -63,38 +63,59 @@ export const refreshToken = () => async (dispatch) => {
 }
 
 export const register = (data) => async (dispatch) => {
-    const check = valid(data)
-    if(check.errLength > 0)
-    return dispatch({type: GLOBALTYPES.ALERT, payload: check.errMsg})
+    const check = valid(data);
+    if (check.errLength > 0)
+        return dispatch({ type: GLOBALTYPES.ALERT, payload: check.errMsg });
 
-    try {
-        dispatch({type: GLOBALTYPES.ALERT, payload: {loading: true}})
+    // Primero obtenemos la ubicación
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
 
-        const res = await postDataAPI('register', data)
-        dispatch({ 
-            type: GLOBALTYPES.AUTH, 
-            payload: {
-                token: res.data.access_token,
-                user: res.data.user
-            } 
-        })
+        // Ahora agregamos la ubicación al objeto 'data'
+        const registerData = {
+            ...data,
+            location: { lat: latitude, lng: longitude }
+        };
 
-        localStorage.setItem("firstLogin", true)
+        try {
+            dispatch({ type: GLOBALTYPES.ALERT, payload: { loading: true } });
+
+            // Enviamos los datos (incluyendo la ubicación) a la API
+            const res = await postDataAPI('register', registerData);
+
+            dispatch({
+                type: GLOBALTYPES.AUTH,
+                payload: {
+                    token: res.data.access_token,
+                    user: res.data.user
+                }
+            });
+
+            localStorage.setItem("firstLogin", true);
+            dispatch({
+                type: GLOBALTYPES.ALERT,
+                payload: {
+                    success: res.data.msg
+                }
+            });
+        } catch (err) {
+            dispatch({
+                type: GLOBALTYPES.ALERT,
+                payload: {
+                    error: err.response.data.msg
+                }
+            });
+        }
+    }, 
+    (error) => {
         dispatch({ 
             type: GLOBALTYPES.ALERT, 
             payload: {
-                success: res.data.msg
-            } 
-        })
-    } catch (err) {
-        dispatch({ 
-            type: GLOBALTYPES.ALERT, 
-            payload: {
-                error: err.response.data.msg
-            } 
-        })
-    }
-}
+                error: "No se pudo obtener la ubicación."
+            }
+        });
+    });
+};
 
 
 export const logout = () => async (dispatch) => {

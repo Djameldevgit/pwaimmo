@@ -75,7 +75,16 @@ const SocketClient = () => {
         return () => socket.off('deleteCommentToClient')
     }, [socket, dispatch])
 
-
+    useEffect(() => {
+        socket.on('userLocationUpdated', (updatedUser) => {
+          dispatch(updateUserLocation(updatedUser)); // Usamos la acción updateUserLocation
+        });
+      
+        return () => {
+          socket.off('userLocationUpdated');
+        };
+      }, [socket, dispatch]);
+      
     // Follow
     useEffect(() => {
         socket.on('followToClient', newUser => {

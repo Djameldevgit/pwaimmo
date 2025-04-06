@@ -16,9 +16,14 @@ export const USER_TYPES = {
     UPDATE_USER_STATUS: 'UPDATE_USER_STATUS',
     CREAR_DENUNCIA: 'CREAR_DENUNCIA',
     GET_DENUNCIAS: 'GET_DENUNCIAS',
-
+    UPDATE_USER_LOCATION: 'UPDATE_USER_LOCATION',
 
 };
+// Acción de Redux: updateUserLocation.js
+export const updateUserLocation = (updatedUser) => ({
+    type: USER_TYPES.UPDATE_USER_LOCATION,
+    payload: updatedUser,
+});
 
 // Acción para obtener la cuenta total de usuarios
 export const fetchTotalUsersCount = (token) => async (dispatch) => {
@@ -61,12 +66,12 @@ export const getUsers = (token, page = 1, limit = 9) => async (dispatch) => {
     try {
         dispatch({ type: USER_TYPES.LOADING_USER, payload: true });
         const res = await getDataAPI(`users?page=${page}&limit=${limit}`, token);
-        
+
         dispatch({
             type: USER_TYPES.GET_USERS,
             payload: { users: res.data.users, result: res.data.result, page: page + 1 }
         });
-        
+
         dispatch({ type: USER_TYPES.LOADING_USER, payload: false });
     } catch (err) {
         dispatch({
@@ -120,7 +125,7 @@ export const getUser = ({ detailUser, id, auth }) => async (dispatch) => {
         }
     }
 };
- 
+
 // Acción para eliminar un usuario
 export const deleteUser = ({ user, auth, socket }) => async (dispatch) => {
     dispatch({ type: USER_TYPES.DELETE_USER, payload: user });
@@ -148,8 +153,8 @@ export const deleteUser = ({ user, auth, socket }) => async (dispatch) => {
 
 
 
- 
- 
+
+
 
 // Acción para actualizar el estado del usuario (suspender o activar)
 export const updateUserStatus = (userId, newStatus, token) => async (dispatch) => {
@@ -166,7 +171,7 @@ export const updateUserStatus = (userId, newStatus, token) => async (dispatch) =
         });
     }
 };
- 
+
 export const createDenuncia = ({ razones, auth, post }) => async (dispatch) => {
 
     try {

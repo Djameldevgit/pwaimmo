@@ -23,7 +23,7 @@ import SocketClient from './SocketClient'
 import { getNotifies } from './redux/actions/notifyAction'
 import CallModal from './components/message/CallModal'
 
-import { getUsers } from './redux/actions/userAction'
+import { getUsers} from './redux/actions/userAction'
 import UsersActionn from './pages/administration/users/UsersActionn'
 import Listadeusuariosbloqueadoss from './pages/administration/users/listadeusuariosbloqueadoss'
 import { getBlockedUsers } from './redux/actions/userBlockAction'
@@ -55,6 +55,16 @@ function App() {
 
   const token = auth.token;
   const language = languageReducer?.language || localStorage.getItem("lang") || "en";
+  const handleGetLocation = () => {
+    navigator.geolocation.getCurrentPosition(
+        position => {
+            // manejar la ubicación aquí
+        },
+        error => {
+            console.error(error);
+        }
+    );
+};
 
   // Efecto para manejar el idioma y dirección del texto
   useEffect(() => {
@@ -107,6 +117,9 @@ function App() {
       dispatch(getPostsPendientes(auth.token))
       dispatch(getSuggestions(auth.token))
       dispatch(getNotifies(auth.token))
+      dispatch(getUsers(auth.token))
+      dispatch(getBlockedUsers(auth.token))
+       
     }
   }, [dispatch, auth.token])
 
@@ -173,7 +186,8 @@ function App() {
           >
             Activar Notificaciones
           </button>
-          
+          <button onClick={handleGetLocation}>Obtener ubicación</button>
+
 
           {status && <StatusModal />}
           {auth.token && <SocketClient />}

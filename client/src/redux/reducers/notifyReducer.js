@@ -4,7 +4,7 @@ import { EditData } from '../actions/globalTypes';
 const initialState = {
     loading: false,
     data: [],
-    sound: false,
+    sound: true,
     isSubscribed: false,  // Nueva propiedad para la suscripción
     subscription: null,   // Almacena la suscripción
 };

@@ -14,16 +14,16 @@ const generatePage = (pageName) => {
 }
 
 const PageRender = () => {
-    const {page, id} = useParams()
+    const {page, id } = useParams()
     const { auth } = useSelector(state => state)
 
     let pageName = "";
-
+    //`${folder}/${page}`
     if(auth.token){
         if(id){
-            pageName = `${page}/[id]`
+            pageName = `${page}/[id]` 
         }else{
-            pageName = `${page}`
+            pageName = `${page}` 
         }
     }
 

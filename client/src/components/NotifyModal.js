@@ -93,7 +93,7 @@ const NotifyModal = () => {
             <hr className="my-1" />
             <div className="text-right text-danger mr-2" style={{cursor: 'pointer'}}
             onClick={handleDeleteAll}>
-                Delete All
+                Souprimier touts
             </div>
 
         </div>

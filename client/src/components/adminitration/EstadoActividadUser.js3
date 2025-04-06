@@ -1,0 +1,135 @@
+import React, { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { useSelector, useDispatch } from "react-redux";
+import { GLOBALTYPES } from "../../redux/actions/globalTypes";
+import { updateUserLocation } from "../../redux/actions/userAction";
+import io from 'socket.io-client';
+ 
+const EstadoActividadUser = () => {
+  const mapRef = useRef(null);
+  const [map, setMap] = useState(null);
+  const dispatch = useDispatch();
+  const { homeUsers, socket,auth } = useSelector((state) => state); // Accedemos a 'socket' y 'users' desde el estado de Redux
+  const  {users}  =homeUsers.users // Accedemos a 'auth' para obtener la información del usuario
+  const [isSocketReady, setIsSocketReady] = useState(false);
+ 
+  useEffect(() => {
+    socket.on('connect', () => {
+      setIsSocketReady(true);
+    });
+  
+    return () => {
+      socket.off('connect');
+    };
+  }, []);
+  
+  useEffect(() => {
+    if (isSocketReady) {
+      socket.on('userLocationUpdated', (updatedUser) => {
+        dispatch(updateUserLocation(updatedUser));
+      });
+    }
+    return () => socket.off('userLocationUpdated');
+  }, [isSocketReady, socket, dispatch]);
+  
+  // Función para obtener la ubicación del usuario y actualizarla en el servidor
+  const updateLocation = (newLocation) => {
+    if (auth.user && auth.user._id) {
+      socket.emit('userLocationUpdated', { userId: auth.user._id, location: newLocation });
+    }
+  };
+
+  // Obtener la ubicación del usuario utilizando Geolocation API
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const newLocation = { lat: latitude, lng: longitude };
+          updateLocation(newLocation); // Actualizamos la ubicación
+        },
+        (error) => {
+          console.error("Error obteniendo la ubicación", error);
+        }
+      );
+    }
+  };
+
+  // Inicializar mapa
+  useEffect(() => {
+    if (mapRef.current) {
+      const initMap = L.map(mapRef.current).setView([51.505, -0.09], 13); // Coordenadas y zoom inicial
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(initMap);
+      setMap(initMap);
+    }
+  }, []);
+
+  // Agregar y actualizar marcadores de usuarios en el mapa
+  useEffect(() => {
+    if (map && homeUsers.users.length > 0) {
+      // Limpiar los marcadores existentes
+      map.eachLayer((layer) => {
+        if (layer && (layer instanceof L.Marker || layer instanceof L.MarkerClusterGroup)) {
+          map.removeLayer(layer);
+        }
+      });
+  
+      // Crear un grupo de marcadores para los usuarios
+      const markers = L.markerClusterGroup();
+  
+      // Agregar un marcador por cada usuario
+      users.forEach((user) => {
+        const { lat, lng } = user.location;
+        if (lat && lng) {
+          const marker = L.marker([lat, lng])
+            .bindPopup(`<b>${user.username || user.name}</b><br>${user.email}`)
+            .on("click", () => {
+              // Puedes agregar acciones adicionales al hacer clic en el marcador
+              console.log(`${user.username || user.name} clicked`);
+            });
+          markers.addLayer(marker);
+        }
+      });
+  
+      // Añadir los marcadores al mapa
+      map.addLayer(markers);
+    }
+  }, [map, users]); // Se ejecuta cada vez que cambia el mapa o la lista de usuarios
+  
+  // Escuchar actualizaciones de ubicación de usuarios
+  useEffect(() => {
+    if (socket) {
+      socket.on('userLocationUpdated', (updatedUser) => {
+        dispatch(updateUserLocation(updatedUser)); // Actualizamos la ubicación en Redux
+      });
+
+      // Cleanup al desmontar el componente
+      return () => {
+        socket.off('userLocationUpdated');
+      };
+    }
+  }, [socket, dispatch]);
+
+  // Conexión al socket y almacenarlo en Redux
+  useEffect(() => {
+    const socketConnection = io(); // Establecer la conexión con el servidor de socket
+    dispatch({ type: GLOBALTYPES.SOCKET, payload: socketConnection }); // Guardar socket en el estado global de Redux
+
+    return () => socketConnection.close(); // Cerrar la conexión cuando el componente se desmonte
+  }, [dispatch]);
+
+  // Llamada para obtener la ubicación del usuario
+  useEffect(() => {
+    getUserLocation(); // Obtener ubicación del usuario al montar el componente
+  }, []); // Se ejecuta solo una vez al montar el componente
+
+  return (
+    <div>
+      <h2>Mapa de Usuarios en Tiempo Real</h2>
+      <div ref={mapRef} style={{ height: "500px" }}></div>
+    </div>
+  );
+};
+
+export default EstadoActividadUser;

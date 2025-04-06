@@ -95,7 +95,19 @@ const SocketServer = (socket) => {
             })
         }
     })
-
+   
+        
+        // Aquí registras el socket del usuario y otras operaciones iniciales
+     // Evento para la actualización de la ubicación de un usuario
+socket.on('userLocationUpdated', ({ userId, location }) => {
+    const user = users.find(u => u.userId === userId);
+    if (user) {
+      // Actualiza la ubicación del usuario en la lista de usuarios
+      // Emitir la actualización de ubicación a todos los clientes
+      io.emit('userLocationUpdated', { _id: userId, location });
+    }
+  });
+  
 
     // Follow
     socket.on('follow', newUser => {

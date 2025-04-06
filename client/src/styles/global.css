@@ -106,7 +106,7 @@ img {
 @import url("./notifymodal.css");
 @import url("./map.css");
 @import url("./estadoactividaduser.css");
-
+@import url("./estadoactividaduser11.css");
 /* --------- Responsive ------ */
 @media (max-width: 766px){
   .header .navbar .logo{

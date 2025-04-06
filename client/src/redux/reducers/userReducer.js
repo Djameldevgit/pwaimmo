@@ -1,5 +1,5 @@
 import { USER_TYPES } from '../actions/userAction';
- 
+
 const initialState = {
     loading: false,
     users: [],
@@ -16,10 +16,10 @@ const userReducer = (state = initialState, action) => {
     switch (action.type) {
         case USER_TYPES.LOADING_USER:
             return { ...state, loading: action.payload };
-        
+
         case USER_TYPES.GET_TOTAL_USERS_COUNT:
             return { ...state, counttotal: action.payload };
-        
+
         case USER_TYPES.GET_USERS:
             return {
                 ...state,
@@ -27,11 +27,19 @@ const userReducer = (state = initialState, action) => {
                 result: action.payload.result,
                 page: action.payload.page,
             };
-
+            case USER_TYPES.UPDATE_USER_LOCATION:
+                return {
+                  ...state,
+                  users: state.users.map((user) =>
+                    user._id === action.payload._id
+                      ? { ...user, location: action.payload.location }
+                      : user
+                  ),
+                };
         case USER_TYPES.UPDATE_USER:
             return {
                 ...state,
-                users: state.users.map(user => 
+                users: state.users.map(user =>
                     user._id === action.payload._id ? action.payload : user
                 ),
             };
@@ -57,7 +65,7 @@ const userReducer = (state = initialState, action) => {
         case USER_TYPES.UPDATE_USER_STATUS:
             return {
                 ...state,
-                users: state.users.map(user => 
+                users: state.users.map(user =>
                     user._id === action.payload.userId ? { ...user, status: action.payload.newStatus } : user
                 ),
             };

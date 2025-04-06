@@ -15,12 +15,15 @@ const userSchema = new mongoose.Schema({
     },
     harramienta: {
         type: String,
-        enum: ['telefono', 'camara', 'telefonocamara', 'efecto1', 'rien', 'efecto2', null],
+        enum: ['telefono', 'camara', 'telefonocamara','images', 'efecto1', 'rien', 'efecto2', null],
         default: 'rien',
         required: false
     },
     
-   
+    location: { 
+        lat: { type: Number, required: false }, 
+        lng: { type: Number, required: false }
+      },
 
     pushSubscription: {
         endpoint: String,
