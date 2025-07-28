@@ -184,9 +184,9 @@ function App() {
             }}
             disabled={!auth.token}
           >
-            Activar Notificaciones
+             
           </button>
-          <button onClick={handleGetLocation}>Obtener ubicación</button>
+          <button onClick={handleGetLocation}></button>
 
 
           {status && <StatusModal />}
